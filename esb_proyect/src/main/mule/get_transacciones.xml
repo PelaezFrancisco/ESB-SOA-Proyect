@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_EsbProyect" doc:name="HTTP Listener config" doc:id="73f3398a-738b-4186-a5eb-1d9acf3fd29f" basePath="esb_proyect">
+		<http:listener-connection host="localhost" port="8099" />
+		<http:listener-interceptors >
+			<http:cors-interceptor >
+				<http:origins >
+					<http:public-resource/>
+				</http:origins>
+			</http:cors-interceptor>
+		</http:listener-interceptors>
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="2e98e1b4-5b04-45f4-847a-a772e440de78" >
+		<http:request-connection host="localhost" port="5000" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_Pacifico" doc:name="HTTP Request configuration" doc:id="e1259645-4e4b-4d5e-b809-197eb8a61a0a" >
+		<http:request-connection host="localhost" port="9567" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_Santander" doc:name="HTTP Request configuration" doc:id="b6954868-a545-4d66-992b-38c2e0158d39" >
+		<http:request-connection host="localhost" port="9566" />
+	</http:request-config>
+	<flow name="servicios" doc:id="8ffc6633-c114-4248-85f0-56c17d667020" >
+		<http:listener doc:name="Listener" doc:id="7f897edf-5325-455a-a0a5-9db7a6e40d4d" config-ref="HTTP_Listener_EsbProyect" path="/{accion}/{cEmi}/{bncEmi}/{monto}/{cRec}/{bncRec}" allowedMethods="PUT, OPTIONS"/>
+		<set-variable value="#[attributes.uriParams.accion]" doc:name="Accion" doc:id="9478645f-e56b-443d-9dcf-f5dd726e3fed" variableName="ac"/>
+		<choice doc:name="Choice" doc:id="4b184456-d81d-45e2-8352-a08db1fedc62" >
+			<when expression='#[vars.ac == "deposito"]'>
+				<logger level="INFO" doc:name="Deposito" doc:id="686df4db-3bf1-4ffb-84aa-bf96d6332ca9" message='#["Se fue a deposito"]'/>
+				<set-variable value="#[attributes.uriParams.bncEmi]" doc:name="Banco" doc:id="2641df6c-3108-4bc1-96d7-ef77371b87c5" variableName="bnce" />
+				<choice doc:name="Choice" doc:id="eea87f22-d0cc-4e47-9113-bae76aa29d65" >
+					<when expression='#[vars.bnce == "pichincha"]' >
+						<logger level="INFO" doc:name="Logger" doc:id="2d617e69-abc0-43c8-8280-3958f3123e92" message='#["Manda a Pichincha"]' />
+						<set-variable value="#[attributes.uriParams.cEmi]" doc:name="Cuenta" doc:id="211acc75-d4df-4d6c-90e0-550ee11f606f" variableName="cid" />
+						<set-variable value="#[attributes.uriParams.monto]" doc:name="Monto" doc:id="e69646ad-e5ff-48d1-b297-849eaef72bf2" variableName="mo" />
+						<http:request method="PUT" doc:name="Request" doc:id="4c80b172-8623-4e4f-8230-e250439b7ca5" config-ref="HTTP_Request_configuration1" path='#["/deposito/" ++ vars.cid ++ "/" ++ vars.mo]' />
+					</when>
+					<when expression='#[vars.bnce == "santander"]' >
+						<logger level="INFO" doc:name="Logger" doc:id="835b3e94-007f-4345-9ba0-3ca572943fd4" message='#["Se manda a Santander"]' />
+						<set-variable value="#[attributes.uriParams.cEmi]" doc:name="Cuenta" doc:id="d21dae6c-0757-4891-b8e8-5885aae7206f" variableName="cid" />
+						<set-variable value="#[attributes.uriParams.monto]" doc:name="Monto" doc:id="29f5bb18-d767-4480-9612-cedc4227e50e" variableName="mo" />
+						<http:request method="PUT" doc:name="Request" doc:id="2850e6eb-f811-476f-aa5b-edaf5af33ae9" config-ref="HTTP_Request_Santander" path='#["/deposito/" ++ vars.cid ++ "/" ++ vars.mo]' />
+					</when>
+					<when expression='#[vars.bnce == "pacifico"]' >
+						<logger level="INFO" doc:name="Logger" doc:id="f338b4e4-f6d5-4a3f-bb67-713e2c2e6acd" />
+						<set-variable value="#[attributes.uriParams.cEmi]" doc:name="Cuenta" doc:id="31499bd4-73d1-4fd9-b874-c6148a965661" variableName="cid" />
+						<set-variable value="#[attributes.uriParams.monto]" doc:name="Monto" doc:id="8bd13efd-7825-4cb2-a2f0-4ba1ea2fc182" variableName="mo" />
+						<http:request method="PUT" doc:name="Request" doc:id="025e810d-7453-4e20-bb04-91567447a6ed" config-ref="HTTP_Request_Pacifico" path='#["/deposito/" ++ vars.cid ++ "/" ++ vars.mo]' />
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Copy_of_Logger" doc:id="23752f49-0e67-49ad-90ab-0839e86a11e7" message='#["Default Choice Retiro"]' />
+					</otherwise>
+				</choice>
+			</when>
+			<when expression='#[vars.ac == "transferencia"]'>
+				<logger level="INFO" doc:name="Transferencia" doc:id="98e7d86c-0972-462c-91e9-075ea5275d8e" message='#["Se fue a Transferencia"]'/>
+				<set-variable value="#[attributes.uriParams.bncEmi]" doc:name="Banco" doc:id="616e0c4a-bf29-4e15-ab66-69b691702223" variableName="bnce" />
+				<choice doc:name="Choice" doc:id="c73274d0-ba1b-4800-99bf-a6587644aacb" >
+					<when expression='#[vars.bnce == "pichincha"]' >
+						<logger level="INFO" doc:name="Logger" doc:id="8c68c68e-c1c2-4e03-894d-60bf19884741" message='#["Manda a Pichincha Transferencia"]' />
+						<set-variable value="#[attributes.uriParams.cEmi]" doc:name="Cuenta Emisor" doc:id="9a197ed1-618a-4ba1-8795-a6ce6ca015f1" variableName="cidemi" />
+						<set-variable value="#[attributes.uriParams.monto]" doc:name="Monto" doc:id="da4f51c5-6cd3-461e-91f4-bb3686435973" variableName="mo" />
+						<set-variable value="#[attributes.uriParams.cRec]" doc:name="Cuenta Receptor" doc:id="2a762bd8-f26a-4c92-bafb-f3f7dabe113b" variableName="cidrec"/>
+						<set-variable value="#[attributes.uriParams.bncRec]" doc:name="Banco Receptor" doc:id="ae5df1df-d344-428b-8da2-84dde3911c8b" variableName="bncr"/>
+						<http:request method="PUT" doc:name="Request" doc:id="274755d7-e46a-4830-aae7-4bf233df86d8" config-ref="HTTP_Request_configuration1" path='#["/transferencia/" ++ vars.cidemi ++ "/" ++ vars.bnce ++ "/" ++ vars.mo ++ "/" ++ vars.cidrec ++ "/" ++ vars.bncr]'/>
+					</when>
+					<when expression='#[vars.bnce == "santander"]' >
+						<logger level="INFO" doc:name="Logger" doc:id="a17883b4-5437-4795-83a7-2bcd516b839f" message='#["Se manda a Santander"]' />
+						<set-variable value="#[attributes.uriParams.cEmi]" doc:name="Cuenta Emisor" doc:id="ced07ea3-3e9e-4e43-95b5-fd9fd26a5bfa" variableName="cidemi" />
+						<set-variable value="#[attributes.uriParams.monto]" doc:name="Monto" doc:id="2aca412e-a67b-4ebc-83df-317e255b2aad" variableName="mo" />
+						<set-variable value="#[attributes.uriParams.cRec]" doc:name="Cuenta Receptor" doc:id="334fa1b9-8f90-4c9b-af9a-6847c0bddbad" variableName="cidrec" />
+						<set-variable value="#[attributes.uriParams.bncRec]" doc:name="Banco Receptor" doc:id="7038ffd4-1ea8-4b3c-9018-ec7a258929f7" variableName="bncr" />
+						<http:request method="PUT" doc:name="Request" doc:id="8fb120b9-79c5-45b4-9b6f-aeffa6d8cd95" config-ref="HTTP_Request_Santander" path='#["/transferencia/" ++ vars.cidemi ++ "/" ++ vars.bnce ++ "/" ++ vars.mo ++ "/" ++ vars.cidrec ++ "/" ++ vars.bncr]' />
+					</when>
+					<when expression='#[vars.bnce == "pacifico"]' >
+						<logger level="INFO" doc:name="Logger" doc:id="af2ebdd7-6d81-462e-bc04-34555bc19127" />
+						<set-variable value="#[attributes.uriParams.bncRec]" doc:name="Banco Receptor" doc:id="88e66d17-f5f2-4ddf-b200-a4e2b9cf78a2" variableName="bncr" />
+						<set-variable value="#[attributes.uriParams.cRec]" doc:name="Cuenta Receptor" doc:id="ba5b614d-7824-499a-b5f5-fd70c1ce45c9" variableName="cidrec" />
+						<set-variable value="#[attributes.uriParams.monto]" doc:name="Monto" doc:id="b4eca5ce-4b98-4e2c-9e71-13cc632d1439" variableName="mo" />
+						<set-variable value="#[attributes.uriParams.cEmi]" doc:name="Cuenta Emisor" doc:id="27209636-f451-4026-a7e5-629a7a649b1a" variableName="cidemi" />
+						<http:request method="PUT" doc:name="Request" doc:id="d5fb0cd3-01f3-49f3-9b66-482571f1454b" config-ref="HTTP_Request_Pacifico" path='#["/transferencia/" ++ vars.cidemi ++ "/" ++ vars.bnce ++ "/" ++ vars.mo ++ "/" ++ vars.cidrec ++ "/" ++ vars.bncr]' />
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="48744aa0-ca51-4a03-bc10-df1819e8d18b" message='#["Default Choice Transferencia"]' />
+					</otherwise>
+				</choice>
+			</when>
+			<when expression='#[vars.ac == "retiro"]' >
+				<logger level="INFO" doc:name="Retiro" doc:id="d30c42bd-7c83-4e48-b040-7cc2c28a1087" message='#["Se fue a retiro"]'/>
+				<set-variable value="#[attributes.uriParams.bncEmi]" doc:name="Banco" doc:id="17736f57-7f1c-41b6-9699-935bbf6aa3ec" variableName="bnce"/>
+				<choice doc:name="Choice" doc:id="a23d2f30-5ba7-4fd1-81a5-c3157efb76b8" >
+					<when expression='#[vars.bnce == "pichincha"]'>
+						<logger level="INFO" doc:name="Logger" doc:id="2925dfca-cf78-465c-9907-a090cb90f66d" message='#["Manda a Pichincha"]'/>
+						<set-variable value="#[attributes.uriParams.cEmi]" doc:name="Cuenta" doc:id="9f5e1cf6-81fa-412a-bd77-f76254739221" variableName="cid"/>
+						<set-variable value="#[attributes.uriParams.monto]" doc:name="Monto" doc:id="a37f2141-3df6-4732-bd09-25f70f2c3af7" variableName="mo"/>
+						<http:request method="PUT" doc:name="Request" doc:id="13ed33e9-6ea4-4cd6-a4b3-87485cf28bcd" config-ref="HTTP_Request_configuration1" path='#["/retiro/" ++ vars.cid ++ "/" ++ vars.mo]'/>
+					</when>
+					<when expression='#[vars.bnce == "santander"]'>
+						<logger level="INFO" doc:name="Logger" doc:id="ac79bd99-c5e7-4f2d-aad4-b12812f2cb75" message='#["Se manda a Santander"]'/>
+						<set-variable value="#[attributes.uriParams.cEmi]" doc:name="Cuenta" doc:id="8b42acdc-6c87-4fe3-8b78-a05d598c8ef3" variableName="cid"/>
+						<set-variable value="#[attributes.uriParams.monto]" doc:name="Monto" doc:id="f06c368c-48bc-412d-ad48-e067b7618a64" variableName="mo"/>
+						<http:request method="PUT" doc:name="Request" doc:id="798a7eab-0c3f-41d3-8706-24ea52c8df8c" config-ref="HTTP_Request_Santander" path='#["/retiro/" ++ vars.cid ++ "/" ++ vars.mo]'/>
+					</when>
+					<when expression='#[vars.bnce == "pacifico"]'>
+						<logger level="INFO" doc:name="Logger" doc:id="96a5c5d1-6cbb-4cd7-962a-4cfa7520b561" />
+						<set-variable value="#[attributes.uriParams.cEmi]" doc:name="Cuenta" doc:id="2152be70-b399-443f-b18c-b9403c144f67" variableName="cid"/>
+						<set-variable value="#[attributes.uriParams.monto]" doc:name="Monto" doc:id="174c58a6-46d9-4f7b-9671-3b8bbd68c97e" variableName="mo"/>
+						<http:request method="PUT" doc:name="Request" doc:id="115ecd02-f751-4c2e-af68-c892ca04e7b5" config-ref="HTTP_Request_Pacifico" path='#["/retiro/" ++ vars.cid ++ "/" ++ vars.mo]'/>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="906943dd-8ddd-446f-b428-7aa009d70ea5" message='#["Default Choice Retiro"]'/>
+					</otherwise>
+				</choice>
+			</when>
+		</choice>
+	</flow>
+</mule>

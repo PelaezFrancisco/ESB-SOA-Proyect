@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Deposito Bancario</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <!-- Bootstrap icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="css/transferencia.css" rel="stylesheet" />
+    <script src = "js/deposito.js"></script>
+</head>
+<body>
+<div class="form-body">
+    <div class="row">
+        <div class="form-holder">
+            <div class="form-content">
+                <div class="form-items">
+                    <h3>Deposito de Dinero</h3>
+                    <form class="requires-validation" method="put" onsubmit="return depositar()">
+                        <div class="col-md-12">
+                            <div style="color: azure; margin-top: 20px;">Numero de la cuenta: </div>
+                            <input id="numCuenta" class="form-control" type="text" name="numeroCuenta" placeholder="Cuenta" required>
+                        </div>
+                        <div class="col-md-12">
+                            <div style="color: azure; margin-top: 20px;">Monto a Depositar</div>
+                            <input id="monto" class="form-control" type="text" name="montoDeposito" placeholder="Monto" required>
+                        </div>
+                        <div class="col-md-12">
+                            <div style="color: azure; margin-top: 20px;">Entidad Bancaria</div>
+                            <select id= "seleccion" name="entidadBancaria" class="form-select mt-3" required >
+                                <option selected disabled value="">Seleccione una opcion..</option>
+                                <option value="pacifico">Banco Pacifico</option>
+                                <option value="pichincha">Banco Pichincha</option>
+                                <option value="santander">Banco Santander</option>
+                            </select>
+                        </div>
+                        <div class="form-button mt-3">
+                            <button id="submit" type="submit" class="btn btn-outline-primary"
+                                style="margin-top: 20px; margin-left: 40%; width: 20%;" onclick="depositar();">Enviar</button>
+                        </div>
+                    </form>
+                    <form action="index.html">
+                        <div class="form-button mt-3">
+                            <button id="submit" type="submit" class="btn btn-outline-primary"
+                                style="margin-top: 20px; width: 20%;" >Regresar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
