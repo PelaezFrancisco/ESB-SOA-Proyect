@@ -22,7 +22,7 @@ function retirar() {
     maux=maux/2;
     montoCuenta=maux.toString();
     */
-    xmlhttp.open("PUT", "http://localhost:8099/esb_proyect/retiro/"+numeroCuenta+"/"+entidad+"/"+montoCuenta+"/default/default", true);
+    xmlhttp.open("PUT", "http://ec2-3-83-158-24.compute-1.amazonaws.com:9568/retiro/"+numeroCuenta+"/"+montoCuenta, true);
     xmlhttp.setRequestHeader('Content-Type', mimeType);
     xmlhttp.send();
 

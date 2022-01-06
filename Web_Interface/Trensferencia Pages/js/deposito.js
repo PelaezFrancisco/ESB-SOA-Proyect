@@ -23,7 +23,7 @@ function depositar() {
     montoCuenta=maux.toString();
     */
     var mimeType = "text/plain";
-    xmlhttp.open("PUT", "http://localhost:8099/esb_proyect/deposito/"+numeroCuenta+"/"+entidadBancaria+"/"+montoCuenta+"/default/default", true);
+    xmlhttp.open("PUT", "http://ec2-3-83-158-24.compute-1.amazonaws.com:9568/deposito/"+numeroCuenta+"/"+montoCuenta, true);
     xmlhttp.setRequestHeader('Content-Type', mimeType);
     xmlhttp.send();
 
